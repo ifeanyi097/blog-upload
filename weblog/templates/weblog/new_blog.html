@@ -1,0 +1,32 @@
+{% extends 'weblog/base.html' %}
+{% block title %}create blog page {% endblock title %}
+ {% block body %}
+       <div class="container">
+    {% if user.is_authenticated and user == profile.user %}
+        <div class="form-area">
+            <form action="" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="text" placeholder="blog title" name="title" value="{{title}}"><br/>
+                <p>{{t_errors}}</p>
+                <label>
+            	    <input type="file" style="display:none" name="media">
+            	    <p style="border:1px solid black;  border-radius:5px;">select a file</p>
+                </label>
+                <textarea name="snippet" id="" cols="37" rows="5" placeholder="create snippet">{{snippet}}</textarea>
+                <p>{{b_errors}}</p>
+                
+                <textarea name="blog" id="" cols="37" rows="30" placeholder="write your blog">{{blog}}</textarea>
+                <label>
+                    <input type="radio" name="is_public" value="draft">
+                    draft
+                </label>
+                <label>
+                    <input type="radio" name="is_public" value="public">
+                    public
+                </label>
+                <button type="submit">save</button>
+            </form>
+        </div>
+    {% endif %}
+    </div>
+{% endblock body %}

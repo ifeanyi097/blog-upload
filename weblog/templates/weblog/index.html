@@ -1,0 +1,44 @@
+{% extends 'weblog/base.html' %}
+{% block title %}weBlog home{% endblock title %}
+{% block body %}
+    <div class="container">
+        <div class="banner">
+            <div class="content">
+                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Impedit deserunt ad dolor commodi ea, culpa saepe ducimus consectetur tenetur eos sit facilis neque, quas. Explicabo.</p>
+                <h4>Happy Reading</h4>
+            </div>
+            
+            
+        </div>
+        <div class="search">
+                <form action="" method="post">
+                    {% csrf_token %}
+                    <input type="text" name="search" id="search">
+                    <input type="submit" value="search">
+                </form>
+            </div>
+        <div class="blogs">
+            <ul>
+            {% for blog in blogs %}
+                <li>
+                    <a href="{% url 'blog' blog.id %}">
+                    {% if not blog.snippet %}
+                        <h3>{{blog.title}}</h3>
+                    {% else %}
+                        <h5>{{blog.snippet}}</h5>
+                    {% endif %}
+                    {% if blog.media %}
+                        <img src="{{blog.media.url}}" alt="{{blog.title}}" width="320" height="240">
+                        <video height="320" width="240" style="display:none;">
+                            <source src="">
+                        </video>
+                    {% endif %}
+                    </a>
+                    <p>by  <a href="{% url 'profile' blog.blogger.id %}">{{blog.blogger.user_profile.full_name}}</a></p>
+                    <p>{{blog.date}}</p>
+                </li>
+            {% endfor %}
+            </ul>
+        </div>
+    </div>
+{% endblock body %}

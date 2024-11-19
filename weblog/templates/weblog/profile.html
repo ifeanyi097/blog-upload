@@ -1,0 +1,59 @@
+{% extends 'weblog/base.html' %}
+{% load static %}
+{% block title %}{{profile.full_name}}'s page{% endblock title %}
+{% block body %}
+    <div class="container">
+        <div class="info">
+        	<div class="picture">
+                <img src="{% if profile.picture %}{{profile.picture.url}}{%endif%}" width="150px" height="150px"alt="">
+            </div>
+            {% if profile.full_name %}
+         	   <h3>{{profile.full_name}}</h3>
+            {% endif %}
+        	{% if user.is_authenticated and user == profile.user %} {% if profile.full_name %}
+        		
+           	 <button> <a href="{% url 'new_blog' profile.user.id %}">new blog</a></button>
+          	  <button> <a href="{% url 'edit_profile' profile.id %}">edit profile</a></button>
+            {% else %}
+            	<button> <a href="{% url 'edit_profile' profile.id %}">edit profile</a></button>
+            {% endif %}{% endif%}
+            <div class="details">
+                <ul>
+                    <li><a href=""><span id="followers">{{profile.count_followers}}</span>|<span>followers</span></a></li>
+                    <li><a href=""><span>{{followings}}</span>|<span>following</span></a></li>
+                    <li><a href=""><span>{{blog_count}}</span>|<span>blogs</span></a></li>
+                    <li><a href=""><span>{{total_likes}}</span>|<span>likes</span></a></li>
+                    <li><a href=""><span>{{total_unlikes}}</span>|<span>unlikes</span></a></li>
+                    
+                </ul>
+                {% if user.is_authenticated and user != profile.user %}
+                    <button id="follow-btn" data-profile-id="{{profile.id}}">follow</button>
+                {% endif %}
+            </div>
+        </div>
+        <div class="main">
+            <div class="blogs">
+     		   <h2>Blog Posts</h2>
+     		   <ul>
+     		   {% for blog in blogs %}
+      		      <li><a href="{% url 'blog' blog.id %}">
+     		           <h3>{{blog.title}}</h3>
+       		         <h5><em>{{blog.snippet}}</em></h5>
+       		         {% if blog.media %}
+          		      <img src="{{blog.media.url}}" height="240px" width="320px"alt="">
+       		         <video style="display:none"width="320"height="240">
+     		               <source src="">
+     		           </video>
+     		           {% endif %}
+         		       <p>{{blog.date}}</p>
+          		      <button><span>likes</span> <span>{{blog.likes.count}}</span></button>
+        		        <button><span>unlikes</span> <span>{{blog.unlikes.count}}</span></button>
+     		           <button><span>comments</span> <span>{{blog.total_comments}}</span></button>
+      		      </a></li>
+      		  {% endfor %}
+		        </ul>
+ 		   </div>
+        </div>
+    </div>
+{% endblock body %}
+{% block js %} <script src="{% static 'weblog/js/profile.js' %}"></script>{% endblock js %}

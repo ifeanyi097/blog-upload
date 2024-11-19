@@ -1,0 +1,22 @@
+{% extends 'weblog/base.html' %}
+{% block title %} weblog signup page {% endblock title %}
+{% block body %}
+    <div class="container">
+    	 <p>already have an account? <a href="{% url 'sign-in' %}"> signup</a></p>
+        <form method="post" action="">
+            {% csrf_token %}
+            <input type="text" name="username" placeholder="username" value="{{username}}"><br>
+            <input type="email" placeholder="e-mail address" name="email" value="{{email}}"><br>
+            <input type="password" placeholder="password" name="password"><br>
+            <input type="password" placeholder="re-type password" name="password2" id="">
+            <button type="submit">signup</button       
+        </form>
+        <div class="errors">
+  		  <p>
+     		   {% for i in errors%}
+      		     {{i}} <br> 
+      		  {% endfor%}
+ 		   </p>
+		</div>
+    </div>
+{% endblock body %}

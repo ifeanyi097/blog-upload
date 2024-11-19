@@ -1,0 +1,29 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    {% block head %}{% endblock head %}
+    <title>{% block title%}{% endblock title %}</title>
+</head>
+<body>
+    <div class="header">
+        <h2><a href="{% url 'home' %}">WeBlog</a></h2>
+        {% if user.is_authenticated %}
+            {% if user.user_profile %}
+                <p><a href="{% url 'profile' user.id %}">{% if user.user_profile.full_name%}{{ user.user_profile.full_name }}{% else%}Your Profile{% endif %}</a></p>
+            {% else %}
+                <p><a href="{% url 'create-profile' user.id %}">Create A Profile</a></p>
+            {% endif %}
+        {% else %}
+        <p><a href="{% url 'sign-in' %}">login</a></p>
+        {% endif %}
+        
+    </div>
+    {% block body %}{% endblock body %}
+    <footer>(c)2024</footer>
+    {% block js %}{% endblock js %}
+</body>
+</html>

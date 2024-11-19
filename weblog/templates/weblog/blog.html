@@ -1,0 +1,51 @@
+{% extends 'weblog/base.html' %}
+{% load static %}
+{% block title %} {{blog.title}}{% endblock title %}
+{% block body %}
+    <div class="container">
+        <h1>{{blog.title}}</h1>
+        <p>by <a href="{% url 'profile' blog.blogger.id %}">{{blog.blogger.user_profile.full_name}}</a></p>
+        <p>{{blog.date}}</p>
+        {% if blog.media%}
+        <div class="media">
+            <img src="{{blog.media.url}}" alt="{{blog.title}}" width="320px" height="240px">
+            <video width="100%" height="300px" style="display:none">
+                <source src="">
+            </video>
+        </div>
+        {% endif %}
+        <div class="snippet">
+            <h5> <em>{{blog.snippet}}</em></h5>
+        </div>
+        <div class="blog">
+            <p>{{blog.blog}}</p>
+        </div>
+        <div class="media2">
+            <video width="100%" height="300px">
+                <source src="">
+            </video>
+        </div>
+        <input type="text" id="blog-id"	value="{{blog.id}}" hidden >
+        
+        <div class="action">
+            <button id="like-btn" data-like-count="{{blog.likes.count}}">like -[<span id="l-number">{{blog.likes.count}}</span>]</button>
+            <button id="unlike-btn" data-unlike-count="{{blog.unlikes.count}}">unlike -[<span id="unl-number">{{blog.unlikes.count}}</span>]</button>
+            <form id="comment-form" action="">
+                <textarea name="comment" id="comment-text" cols="37" rows="5"></textarea>
+                <button type="submit">comment</button>
+            </form>
+        </div>
+        <div class="comment-section">
+        	<ul id="comment-box">
+        		{% for comment in comments %}
+        			{% if comment.writer.user_profile.full_name %}
+        			 <li> <a href="{% url 'profile' comment.writer.id %}">{{comment.writer.user_profile.full_name}}</a><br>
+        			 <p>{{comment.comment}}</p>
+        			 </li>
+        		 {% endif %}
+        		{% endfor %}
+        	</ul>
+        </div>
+    </div>
+{% endblock body %}
+{% block js %} <script src="{% static 'weblog/js/blog.js' %}"></script>{% endblock js %}
