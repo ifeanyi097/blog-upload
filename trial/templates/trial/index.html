@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+<div class="fresh">
+    <form id="uploadForm">
+        <input id="videoFile" type="file"><br>
+        <button type="submit" >upload</button>
+    </form>
+</div>
+<div id="progress">...</div>
+<div class="unfinished">
+<h4 id="un"> unfinished</h4>
+    <ul>
+    {% for data in videos %}
+    {% if not data.is_finished %}
+        <li>
+        	<p id="b-{{data.fileId}}">{{data.chunkIndex}}|{{data.totalChunks}}{{data.is_finished}}</p>
+        	<button><label for="{{data.fileId}}">continue</label></button>
+        	<input id="{{data.fileId}}" class="continueInput" data-id="{{data.fileId}}" data-index="{{data.chunkIndex}}" data-total="{{data.totalChunks}}" data-name="{{data.fileName}}" data-size="{{data.fileSize}}" type="file" style="display:none;">
+        </li>
+    {% endif %}
+    {% endfor %}
+    </ul>
+</div>
+<h5>finished videos</h5>
+<div id="finished">
+
+{% for i in videos %}
+{% if i.is_finished %}
+    <div class="content">
+        <video src="{{i.path.url}}" controls width="320px" height="240px"></video>
+    </div>
+{% endif %}
+{% endfor %}
+  
+</div>
+<script>
+
+    function getCookie(name){
+            let cookieValue = null;
+            if(document.cookie && document.cookie !== ""){
+                const cookies = document.cookie.split(";");
+                for(let i=0; i<cookies.length; i++){
+                    const cookie = cookies[i].trim();
+                    if(cookie.substring(0, name.length + 1) === (name + "=")){
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+   const csrfToken = getCookie("csrftoken");
+    
+    
+    document.getElementById("uploadForm").addEventListener("submit", async function(e){
+    	e.preventDefault();
+    
+  
+        const file = document.getElementById("videoFile").files[0];
+        if(!file) return alert("nothing");
+        const fileName = file.name;
+        const fileSize = file.size;
+        const totalChunks = Math.ceil(fileSize/(1024*1024));
+        const chunkSize = 1024*1024;
+        const fileId = await getId();
+        let index = 0;
+        
+        if(!fileId) return alert("id not generated");
+        
+        await upload(file,fileName,fileSize,totalChunks, chunkSize, fileId, index, "progress")
+      
+    })
+    
+    async function getId(){
+        let value = null;
+        await fetch("/getId/")
+        .then(response => {
+            if(!response.ok){
+                alert("server error")
+            }
+            return response.json();
+        })
+        .then(data => {
+            if(data.status === "ok"){
+                value = data.id;
+            }
+            else{
+                alert("return null")
+            }
+        })
+        return value;
+    }
+    
+    async function upload(file,filename,filesize,totalchunks,chunksize,fileid, index, loc){
+    	
+        
+        for(let i=index; i<totalchunks; i++){
+        	
+        	
+            let chunk = file.slice(i*chunksize, (i+1)*chunksize);
+           
+            
+            const formData = new FormData();
+            formData.append("file", chunk);
+            formData.append("fileName", filename);
+            formData.append("fileSize",filesize);
+            formData.append("totalChunks", totalchunks);
+            formData.append("fileId", fileid);
+            formData.append("chunkIndex", i);
+            
+            
+        
+            await fetch("/upload/",{
+                method:"POST",
+                headers:{
+                    "X-CSRFToken":csrfToken
+                },
+                body: formData
+            })
+            .then(response => {
+                if(!response.ok){
+                	alert("server error")
+                }
+                return response.json();
+            })
+            .then(data => {
+            
+                if(data.status === "completed"){
+                    const li = document.createElement("div");
+                    li.innerHTML = `<video src="${data.url}" controls width="320px" height="240px"></video>`;
+                    const par = document.getElementById("finished")
+                    if(par.firstChild){
+                      par.insertBefore(li, par.firstChild);
+                    }
+                    else{
+                        par.appendChild(li);
+                    }
+                    
+                }
+                else if(data.error){
+                    alert(data.error);
+                }
+                
+                document.getElementById(`${loc}`).innerHTML = `<p>uploading .. ${(i + 1)}mb of ${totalchunks}mb</p>`
+               
+            })
+        }
+        
+        
+    }
+    
+const actions = document.querySelectorAll(".continueInput")
+
+actions.forEach((action) => {
+	action.onchange = async function(e){
+		
+		const data = e.currentTarget;
+		console.log(data.id);
+		document.getElementById("un").innerHTML = data.dataset.id;
+		const file = data.files[0]
+		if (!file) return alert("please select a file");
+		const fileName  = file.name;
+		const fileSize = file.size;
+		const totalChunks = data.dataset.total;
+		let chunkIndex = parseInt(data.dataset.index, 10);
+		const chunkSize = 1024*1024;
+		const fileId = data.dataset.id;
+		
+		await upload(file, fileName, fileSize, totalChunks, chunkSize, fileId, chunkIndex, `b-${fileId}`)
+	}
+})
+</script>
+</body>
+</html>
